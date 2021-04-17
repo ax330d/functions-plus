@@ -20,8 +20,8 @@ import idautils
 from idaapi import PluginForm
 from PyQt5 import QtWidgets, QtGui
 
-__author__ = 'Arthur Gerkis'
-__version__ = '0.0.3'
+__author__ = 'xxxzsx, Arthur Gerkis'
+__version__ = '1.0.1'
 
 
 class FunctionState(object):
@@ -134,10 +134,10 @@ class Cols(object):
             self.names.extend(['R', 'F', 'L', 'S', 'B', 'T', '='])
             # TODO: add Lumina column info
             self.handlers.update({
-                6: lambda: self.is_true(not self.flags & idc.FUNC_NORET, 'R'),
-                7: lambda: self.is_true(self.flags & idc.FUNC_FAR, 'F'),
-                8: lambda: self.is_true(self.flags & idc.FUNC_LIB, 'L'),
-                9: lambda: self.is_true(self.flags & idc.FUNC_STATIC, 'S'),
+                6:  lambda: self.is_true(not self.flags & idc.FUNC_NORET, 'R'),
+                7:  lambda: self.is_true(self.flags & idc.FUNC_FAR, 'F'),
+                8:  lambda: self.is_true(self.flags & idc.FUNC_LIB, 'L'),
+                9:  lambda: self.is_true(self.flags & idc.FUNC_STATIC, 'S'),
                 10: lambda: self.is_true(self.flags & idc.FUNC_FRAME, 'B'),
                 11: lambda: self.is_true(idc.get_type(self.addr), 'T'),
                 12: lambda: self.is_true(self.flags & idc.FUNC_BOTTOMBP, '=')
@@ -338,7 +338,7 @@ class FunctionsPlus(PluginForm):
             self._handle_function_data_instance(function_tree, root)
             return
 
-        for name, tree in sorted(function_tree.iteritems()):
+        for name, tree in sorted(function_tree.items()):
             func_item = QtWidgets.QTreeWidgetItem(root)
             if not isinstance(tree, FunctionData):
                 name = self._handle_class_name(tree, name, func_item)
@@ -350,7 +350,7 @@ class FunctionsPlus(PluginForm):
         Handles class name.
         '''
 
-        tree_keys_len = len(tree.keys())
+        tree_keys_len = len(list(tree.keys()))
         name = '{} ({} {})'.\
             format(name, tree_keys_len, self._get_word(tree_keys_len))
         font = QtGui.QFont()
@@ -368,7 +368,7 @@ class FunctionsPlus(PluginForm):
 
         self.cols.set_data(addr, flags)
 
-        for index in xrange(0, len(self.cols.names)):
+        for index in range(0, len(self.cols.names)):
             if index > 0:
                 root.setText(index, self.cols.item(index))
             if flags & idc.FUNC_THUNK:
@@ -418,7 +418,7 @@ class FunctionsPlus(PluginForm):
         self._populate_tree()
 
         self.tree.setColumnWidth(0, 512)
-        for index in xrange(6, len(self.cols.names)):
+        for index in range(6, len(self.cols.names)):
             self.tree.setColumnWidth(index, 32)
         self.tree.setAlternatingRowColors(True)
 
@@ -443,10 +443,32 @@ class FunctionsPlus(PluginForm):
         return PluginForm.Show(self, 'Functions+')
 
 
-def main():
-    funp = FunctionsPlus()
-    funp.Show()
+class FunctionsPlusPlugin(idaapi.plugin_t):
+    flags = idaapi.PLUGIN_KEEP
+    comment = "Functions+"
 
+    help = ""
+    wanted_name = "Functions+"
+    wanted_hotkey = ""
 
-if __name__ == '__main__':
-    main()
+    # @staticmethod
+    # def init():
+    #     return idaapi.PLUGIN_KEEP
+
+    @staticmethod
+    def init():
+        funp = FunctionsPlus()
+        funp.Show()
+        return idaapi.PLUGIN_KEEP
+
+    @staticmethod
+    def run(arg=0):
+        funp = FunctionsPlus()
+        funp.Show()
+
+    @staticmethod
+    def term():
+        pass
+
+def PLUGIN_ENTRY():
+    return FunctionsPlusPlugin()
